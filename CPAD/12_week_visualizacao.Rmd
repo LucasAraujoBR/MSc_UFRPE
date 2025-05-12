@@ -1,0 +1,427 @@
+
+---
+title: "Exercício 12 - Visualização de Dados"
+autor: Lucas Araújo
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Dados fornecidos
+clock <- c(0.1, 0.5, 1, 1.5, 2, 2.5, 3)
+
+MRT_1F <- c(517.1468515630205, 85.13094142168089, 30.333207896694553,
+            12.694776264558937, 3.3041601673945418, 1.1823111717498882,
+            1.1892293502386786)
+
+MRT_3F <- c(156.68929936163462, 11.540837783562276, 0.4512835621696538,
+            0.4509797929766453, 0.4502068233039181, 0.4496185276300172,
+            0.4543157082191288)
+
+MRT_5F <- c(83.90319666471157, 0.3068151086494968, 0.30522314133037304,
+            0.3072588968084928, 0.30655265997285697, 0.3055812715727718,
+            0.3053297166713006)
+
+MRT_10F <- c(29.55430642951759, 0.19832832665772515, 0.1971923924717474,
+             0.19796648905716516, 0.19615594370806338, 0.2034569237883263,
+             0.19617420889447737)
+
+MRT_15F <- c(11.317736530583566, 0.167364215666193, 0.16172168266811013,
+             0.16701085329580515, 0.1598052657153692, 0.1645934043532696,
+             0.16216563797118075)
+
+MRT_sem_F <- c(11.93430909937736, 0.6095414637034009, 0.6060645101029295,
+               0.612167181646899, 0.6146761002685637, 0.6096747087200697,
+               0.6125810476877268)
+```
+
+---
+
+## Questão 1
+
+```{r}
+# Organizando layout com 2 linhas e 2 colunas
+layout(matrix(c(1,2,3,4), nrow = 2, byrow = TRUE))
+
+# Gráfico 1: MRT_1F
+plot(clock, MRT_1F, type = "b", col = "blue", lwd = 2,
+     main = "Gráfico 1: MRT_1F", xlab = "Clock (GHz)", ylab = "MRT")
+
+# Gráfico 2: Barras MRT_1F e MRT_3F com escala log e cores específicas
+barplot(rbind(MRT_1F, MRT_3F), beside = TRUE, log = "y",
+        col = c("#E6E6E6", "#666666"), names.arg = clock,
+        main = "Gráfico 2: Barras (log)", xlab = "Clock", ylab = "MRT")
+legend("topright", legend = c("MRT_1F", "MRT_3F"), fill = c("#E6E6E6", "#666666"))
+
+# Gráfico 3: Comparação de MRT_5F e MRT_10F
+plot(clock, MRT_5F, type = "o", col = "green", ylim = c(0, max(MRT_5F, MRT_10F)),
+     main = "Gráfico 3: MRT_5F vs MRT_10F", xlab = "Clock", ylab = "MRT")
+lines(clock, MRT_10F, type = "o", col = "purple")
+legend("topright", legend = c("MRT_5F", "MRT_10F"), col = c("green", "purple"), lty = 1, pch = 1)
+
+# Gráfico 4: Todos os MRTs
+matplot(clock, cbind(MRT_1F, MRT_3F, MRT_5F, MRT_10F, MRT_15F, MRT_sem_F),
+        type = "l", lty = 1, col = 1:6, lwd = 2,
+        xlab = "Clock", ylab = "MRT", main = "Gráfico 4: Todos MRTs")
+legend("topright", legend = c("1F", "3F", "5F", "10F", "15F", "Sem F"), col = 1:6, lty = 1)
+```
+
+## Questão 2
+
+````{r}
+# Criando a matriz com os dados da tabela
+dados <- matrix(c(
+  53.8, 33.9, 2.6, 0.0,     # Good
+  43.6, 54.2, 60.5, 21.4,   # Very Good
+  2.6, 11.9, 36.8, 78.6     # Excellent
+), 
+nrow = 3, byrow = TRUE)
+
+# Nomeando linhas e colunas
+rownames(dados) <- c("Good", "Very Good", "Excellent")
+colnames(dados) <- c("$10–19", "$20–29", "$30–39", "$40–49")
+
+# Definindo cores
+cores <- c("skyblue", "steelblue", "navy")
+
+# Criando o gráfico de barras empilhadas
+barplot(dados,
+        col = cores,
+        legend.text = rownames(dados),
+        args.legend = list(x = "topright"),
+        main = "Distribuição da Qualidade da Refeição por Faixa de Preço",
+        xlab = "Preço da Refeição",
+        ylab = "Percentual (%)")
+````
+
+## Questão 3
+```{r}
+# Filtrando os dados de maio
+dados_maio <- subset(airquality, Month == 5)
+
+# Convertendo temperatura de Fahrenheit para Celsius
+temp_celsius <- (dados_maio$Temp - 32) / 1.8
+
+# Gerando o histograma
+hist(temp_celsius,
+     breaks = 8,
+     col = "lightblue",
+     main = "Histograma das Temperaturas de Maio (°C)",
+     xlab = "Temperatura (°C)",
+     ylab = "Frequência",
+     prob = TRUE)  # para adicionar curva de densidade
+
+# Adicionando a curva de densidade
+lines(density(temp_celsius, na.rm = TRUE), col = "darkblue", lwd = 2)
+```
+
+
+## Questão 4
+```{r}
+# Questão 4 - Gráfico de pizza com total de vendas por país
+
+# Lendo o dataset e tratando corretamente os separadores
+sales <- read.table("https://training-course-material.com/images/8/8f/Sales.txt",
+                    header = TRUE,
+                    sep = "\t",          # <-- separador tabulado
+                    stringsAsFactors = FALSE,
+                    fill = TRUE)         # <-- preenche linhas incompletas com NA
+
+cat("Linhas:", nrow(sales), " - Amount:", length(sales$amount), " - Country:", length(sales$country), "\n")
+
+# Conferir nomes das colunas
+print(names(sales))
+
+# Remover colunas ou linhas incompletas, se necessário
+sales <- na.omit(sales)
+
+# Verifique se colunas existem e estão corretas
+str(sales)
+
+# Padronizar nomes (caso estejam com espaços ou maiúsculas)
+names(sales) <- trimws(tolower(names(sales)))
+
+# Verifique os nomes resultantes
+print(names(sales))
+
+# Agora calcule as vendas por país
+vendas_por_pais <- tapply(sales$sales, sales$country, sum)
+
+
+# Criar porcentagens e rótulos
+porcentagem <- round(100 * vendas_por_pais / sum(vendas_por_pais), 1)
+rotulos <- paste(names(vendas_por_pais), "-", porcentagem, "%")
+
+# Cores para o gráfico
+cores <- rainbow(length(vendas_por_pais))
+
+# Gráfico de pizza
+pie(vendas_por_pais,
+    labels = rotulos,
+    col = cores,
+    main = "Distribuição das Vendas por País")
+
+# Legenda
+legend("topright", legend = names(vendas_por_pais), fill = cores)
+
+```
+
+## Questão 5
+```{r}
+# Carregar o dataset InsectSprays
+data("InsectSprays")
+
+# Criar o boxplot sem outliers
+boxplot(count ~ spray, data = InsectSprays,
+        main = "Contagem de Insetos por Tipo de Inseticida",  # Título
+        xlab = "Tipo de Inseticida",  # Nome do eixo X
+        ylab = "Contagem de Insetos",  # Nome do eixo Y
+        col = "yellow",  # Cor de preenchimento das caixas
+        outline = FALSE)  # Remover outliers
+```
+
+
+## Questão 6
+```{r}
+# Carregar as bibliotecas necessárias
+library(ggplot2)
+
+# Carregar os dados
+data_0.1 <- read.csv("/Users/lucasaraujo/Projects/R_Projects/CPAD/monitoringCloudData_0.1.csv")
+data_0.5 <- read.csv("/Users/lucasaraujo/Projects/R_Projects/CPAD/monitoringCloudData_0.5.csv")
+data_1 <- read.csv("/Users/lucasaraujo/Projects/R_Projects/CPAD/monitoringCloudData_1.csv")
+data_NONE <- read.csv("monitoringCloudData_NONE.csv")
+
+# Função para ajustar os dados
+adjust_data <- function(data) {
+  
+  # Ajustar a coluna currentTime para formato de data
+  data$currentTime <- as.POSIXct(data$currentTime, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+  
+  # Verifique se existem valores inválidos
+  if (any(is.na(data$currentTime))) {
+    warning("Existem valores inválidos na coluna currentTime!")
+  }
+  
+  # Calcular a diferença de tempo (time_diff) em horas
+  data$time_diff <- difftime(data$currentTime, min(data$currentTime, na.rm = TRUE), units = "hours")
+  
+  # Verifique se time_diff tem valores inválidos
+  if (any(is.na(data$time_diff)) | any(is.infinite(data$time_diff))) {
+    warning("Existem valores inválidos na coluna time_diff!")
+  }
+  
+  # Limpeza da coluna usedMemory para números em MB
+  data$usedMemory <- gsub("GB", "", data$usedMemory)
+  data$usedMemory <- gsub("TB", "", data$usedMemory)
+  data$usedMemory <- gsub("MB", "", data$usedMemory)
+  
+  # Converter para numérico
+  data$usedMemory <- as.numeric(data$usedMemory)
+  
+  # Agora ajustar a coluna para MB (GB * 1024, TB * 1000000)
+  data$usedMemory <- ifelse(grepl("GB", data$usedMemory), data$usedMemory * 1024, data$usedMemory)
+  data$usedMemory <- ifelse(grepl("TB", data$usedMemory), data$usedMemory * 1000000, data$usedMemory)
+  
+  # Verifique se usadoMemory tem valores inválidos
+  if (any(is.na(data$usedMemory)) | any(is.infinite(data$usedMemory))) {
+    warning("Existem valores inválidos na coluna usedMemory!")
+  }
+  
+  # Remover linhas com NA ou Inf nas colunas de interesse
+  data <- data[complete.cases(data$time_diff, data$usedMemory), ]
+  
+  return(data)
+}
+
+# Aplique a função para cada conjunto de dados
+data_0.1 <- adjust_data(data_0.1)
+data_0.5 <- adjust_data(data_0.5)
+data_1 <- adjust_data(data_1)
+data_NONE <- adjust_data(data_NONE)
+
+# Organize os gráficos com a função layout
+layout(matrix(1:4, ncol = 2))
+
+# Gráfico para o dataset 0.1
+plot(data_0.1$time_diff, data_0.1$usedMemory, type = "l", col = "blue", 
+     xlab = "Tempo (horas)", ylab = "Memória Usada (MB)", 
+     main = "Monitoramento - 0.1")
+
+# Gráfico para o dataset 0.5
+plot(data_0.5$time_diff, data_0.5$usedMemory, type = "l", col = "red", 
+     xlab = "Tempo (horas)", ylab = "Memória Usada (MB)", 
+     main = "Monitoramento - 0.5")
+
+# Gráfico para o dataset 1
+plot(data_1$time_diff, data_1$usedMemory, type = "l", col = "green", 
+     xlab = "Tempo (horas)", ylab = "Memória Usada (MB)", 
+     main = "Monitoramento - 1")
+
+# Gráfico para o dataset NONE
+plot(data_NONE$time_diff, data_NONE$usedMemory, type = "l", col = "purple", 
+     xlab = "Tempo (horas)", ylab = "Memória Usada (MB)", 
+     main = "Monitoramento - NONE")
+
+
+```
+
+## Questão 7
+```{r}
+# Carregar pacotes necessários
+library(dplyr)
+library(plotly)
+
+# Carregar o dataset Netflix (supondo que você tenha o arquivo CSV)
+netflix_data <- read.csv("/Users/lucasaraujo/Projects/R_Projects/CPAD/netflix_titles.csv", stringsAsFactors = FALSE)
+
+# Filtrar os conteúdos com apenas UM país de origem
+netflix_data <- netflix_data %>%
+  filter(!is.na(country)) %>% 
+  mutate(country_count = sapply(strsplit(country, ","), length)) %>%
+  filter(country_count == 1)
+
+# Contar os países com mais conteúdos
+country_counts <- netflix_data %>%
+  count(country, sort = TRUE) %>%
+  top_n(10, n)
+
+# Criar gráfico de pizza usando Plotly
+pie_chart <- plot_ly(
+  data = country_counts, 
+  labels = ~country, 
+  values = ~n, 
+  type = 'pie',
+  textinfo = 'label+percent',
+  title = "Top 10 países com mais conteúdos na Netflix (2019)"
+)
+
+# Exibir o gráfico
+pie_chart
+```
+
+## Questão 8
+```{r}
+# Carregar pacotes necessários
+library(dplyr)
+library(plotly)
+
+# Filtragem dos dados conforme a questão anterior (para os 10 países com mais conteúdos)
+country_counts <- netflix_data %>%
+  count(country, sort = TRUE) %>%
+  top_n(10, n)
+
+# Criar a tabela com Plotly
+table <- plot_ly(
+  type = 'table',
+  header = list(
+    values = c("País", "Total de conteúdos"),
+    align = 'center',
+    line = list(color = 'black'),
+    fill = list(color = 'gray'),
+    font = list(color = 'white', size = 14)
+  ),
+  cells = list(
+    values = list(country_counts$country, country_counts$n),
+    align = 'center',
+    line = list(color = 'black'),
+    fill = list(color = 'white'),
+    font = list(color = 'black', size = 12)
+  )
+)
+
+# Exibir a tabela
+table
+```
+
+## Questão 9
+```{r}
+# Carregar pacotes necessários
+library(dplyr)
+library(plotly)
+
+# Carregar o dataset Netflix (supondo que você tenha o arquivo CSV)
+netflix_data <- read.csv("/Users/lucasaraujo/Projects/R_Projects/CPAD/netflix_titles.csv", stringsAsFactors = FALSE)
+
+# Converter a coluna 'release_year' para numérico
+netflix_data$release_year <- as.numeric(netflix_data$release_year)
+
+# Agrupar os anos por década (ex: 2000-2009, 2010-2019, etc.)
+netflix_data$decade <- floor(netflix_data$release_year / 10) * 10
+
+# Contar a quantidade de filmes e séries por década
+content_by_decade <- netflix_data %>%
+  filter(!is.na(release_year)) %>%
+  group_by(decade, type) %>%
+  count() %>%
+  ungroup()
+
+# Separar os dados por tipo (série e filme)
+series_data <- content_by_decade %>% filter(type == "TV Show")
+movies_data <- content_by_decade %>% filter(type == "Movie")
+
+# Criar gráfico de linha com Plotly
+plot <- plot_ly() %>%
+  add_lines(data = series_data, x = ~decade, y = ~n, type = 'scatter', mode = 'lines', name = 'Séries', line = list(color = 'blue')) %>%
+  add_lines(data = movies_data, x = ~decade, y = ~n, type = 'scatter', mode = 'lines', name = 'Filmes', line = list(color = 'yellow')) %>%
+  layout(
+    title = "Quantidade de Conteúdo por Década na Netflix",
+    xaxis = list(
+      title = "Década",
+      tickmode = "array", # Modo de ticks ajustado
+      tickvals = seq(1940, max(netflix_data$decade), by = 20) # Exibe apenas as décadas de 20 em 20 anos.
+    ),
+    yaxis = list(title = "Quantidade de Conteúdo"),
+    showlegend = TRUE
+  )
+
+# Exibir o gráfico
+plot
+```
+
+## Questão 10
+```{r}
+# Carregar pacotes necessários
+library(dplyr)
+library(plotly)
+
+# Carregar o dataset Netflix (supondo que você tenha o arquivo CSV)
+netflix_data <- read.csv("/Users/lucasaraujo/Projects/R_Projects/CPAD/netflix_titles.csv", stringsAsFactors = FALSE)
+
+# Converter a coluna 'release_year' para numérico
+netflix_data$release_year <- as.numeric(netflix_data$release_year)
+
+# Filtrar os filmes lançados entre 2000 e 2010
+netflix_data_filtered <- netflix_data %>%
+  filter(release_year >= 2000 & release_year <= 2010) %>%
+  filter(type == "Movie")  # Apenas filmes
+
+# Extrair o primeiro gênero listado na coluna 'listed_in'
+netflix_data_filtered$primary_genre <- sapply(strsplit(netflix_data_filtered$listed_in, ","), `[`, 1)
+
+# Filtrar apenas os gêneros de interesse: "Dramas", "Action & Adventure", "Comedies"
+genres_of_interest <- c("Dramas", "Action & Adventure", "Comedies")
+netflix_data_filtered <- netflix_data_filtered %>%
+  filter(primary_genre %in% genres_of_interest)
+
+# Contar a quantidade de filmes por gênero e ano
+content_by_genre_year <- netflix_data_filtered %>%
+  group_by(release_year, primary_genre) %>%
+  count() %>%
+  ungroup()
+
+# Criar gráfico de barras lado a lado com Plotly
+plot <- plot_ly(content_by_genre_year, x = ~release_year, y = ~n, color = ~primary_genre, type = 'bar',
+                barmode = 'group', 
+                colors = c('blue', 'red', 'green')) %>%
+  layout(
+    title = "Quantidade de Filmes por Gênero (2000-2010)",
+    xaxis = list(title = "Ano de Lançamento"),
+    yaxis = list(title = "Quantidade de Filmes"),
+    showlegend = TRUE
+  )
+
+# Exibir o gráfico
+plot
+```
